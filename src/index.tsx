@@ -1,4 +1,4 @@
-import { addDeps, addFunc, addTestGen, gennode, inputReassigner, objReassign } from "builder"
+import { meta, addDeps, addFunc, addTestGen, asIsGen, gennode, inputReassigner } from "builder"
 
 export const App = gennode.builder()
 .next(gn => addDeps(gn, {
@@ -13,7 +13,7 @@ export const App = gennode.builder()
   }
 ))
 .next(gn => addTestGen(gn, inputReassigner(gn.build).add(
-  objReassign(gn.deps, ["useGreeting"])
+  asIsGen(meta.without(gn.deps))
 ).done()))
 .done()
 
