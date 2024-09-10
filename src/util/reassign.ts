@@ -1,45 +1,24 @@
-export const dictFuncToFuncDict = (fn: (input: any, dep: any, n: string) => any) => (dict: Record<string, any>) =>
-(input: any) => {
-  return Object.keys(dict).reduce((acc, key) => {
-    acc[key] = fn(input, dict[key], key)
+export const reassign = <D extends Record<string, any>, O, DG extends {
+  [K in keyof D]: (input: any) => D[K]
+}>(
+  fn: (input: D) => O,
+  gens: DG
+) => 
+(input: Parameters<DG[keyof D]>[0]): O => {
+  return fn(Object.keys(gens).reduce((acc, key) => {
+    acc[key] = gens[key](input)
     return acc
-  }, {} as any)
+  }, {} as any))
 }
 
-export const flatGen: <Deps extends Record<string, (input: any) => any>> (deps: Deps) => (
-  input: Parameters<Deps[keyof Deps]>[0]
-) => {
-  [K in keyof Deps]: ReturnType<Deps[K]>
-} 
-= dictFuncToFuncDict((input, dep, n) => dep(input))
+export const fielded = <K extends string, I, O>(key: K, fn: (input: I) => O) => 
+(input: Record<K, I>): O => fn(input[key])
 
-export const nestGen: <Deps extends Record<string, (input: any) => any>> (deps: Deps) => (
-  input: {[K in keyof Deps]: Parameters<Deps[K]>[0]}
-) => {
-  [K in keyof Deps]: ReturnType<Deps[K]>
-}
-= dictFuncToFuncDict((input, dep, n) => dep(input[n]))
 
-export const asIsGen: <Deps extends Record<string, any>> (deps: Deps) => (
-  input: {[K in keyof Deps]: Deps[K]}
-) => {[K in keyof Deps]: Deps[K]}
-= dictFuncToFuncDict((input, dep, n) => input[n])
+export type OmitF<T extends Record<string, any>, K extends string> = T extends (...args: infer I) => infer O
+? (...args: I) => O & Omit<T, K>
+: Omit<T, K>
 
-export interface InputReassigner<I extends Record<string, any>, R, O = {}, Done extends keyof I = never> {
-  add<K extends keyof Omit<I, Done>, O2>(gen: (opts: O2) => Pick<I, K>): InputReassigner<I, R, O & O2, Done | K> 
-  done(): keyof I extends Done ? (input: O) => R : never
-}
-
-export function inputReassigner<I extends Record<string, any>, R = I>(fn: (input: I) => R): InputReassigner<I, R> {
-  let build: (input: any) => any = () => ({})
-  const done: any = () => (input: any) => fn(build(input))
-  const add = <K extends keyof I, O>(gen: (opts: O) => Pick<I, K>) => {
-    const buildPrev = build
-    build = (input) => ({
-      ...buildPrev(input),
-      ...gen(input),
-    })
-    return { add, done }
-  }
-  return { add, done }
+export type DictWithout<D extends Record<string, any>, WP extends string> = {
+  [K in keyof D]: OmitF<D[K], WP>
 }
