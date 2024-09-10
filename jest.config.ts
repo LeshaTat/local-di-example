@@ -1,7 +1,7 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-  testMatch: ['**/*.spec.ts[x]'],
+  testMatch: ['**/*.spec.tsx', '**/*.spec.ts'],
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
 };
 

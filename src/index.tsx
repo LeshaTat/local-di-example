@@ -1,18 +1,21 @@
-import { meta, withArgs, addBuild, asIsGen, gennode, inputReassigner, addBuildDeps, build, addBuildWithDeps, add, WithoutMeta } from "builder"
+import { DictWithout, field } from "./util/dict";
+import { inputReassigner, nestGen } from "./util/reassign";
 
-export const App = gennode.builder()
-.next(gn => addBuildDeps({
-  useGreeting: gennode.builder()
-  .done(gn => () => "Hello World!" as string)
-}))
-.next(gn => addBuild(withArgs(meta.without(gn.deps))(({useGreeting}) => 
-  function App() {
-    const greeting = useGreeting();
-    return <div>{ greeting }</div>;
-  }
-)))
-.next(gn => add("testGen")(inputReassigner(gn.build).add(
-  asIsGen(meta.without(gn.deps))
-).done()))
-.done(gn => build(gn))
+const deps = {
+  useGreeting: Object.assign(() => "Hello World!" as string, {
+    testGen: (greeting: string) => () => greeting
+  })
+}
 
+const buildApp = ({useGreeting}: DictWithout<typeof deps, "testGen" | "deps">) =>
+function App() {
+  const greeting = useGreeting();
+  return <div>{ greeting }</div>;
+}
+
+export const App = Object.assign(buildApp(deps), { 
+  deps,
+  testGen: inputReassigner(buildApp).add(
+    nestGen(field("testGen")(deps))
+  ).done()
+})
