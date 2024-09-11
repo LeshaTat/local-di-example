@@ -79,14 +79,14 @@ const useGreetings = Object.assign(() => "Hello World!" as string, {
 })
 ```
 
-In this case, we can create a simplified test generator for the component.
+In this case, we can create a somewhat simplified test generator for the component.
 ```typescript
 export const App = Object.assign(buildApp(deps), {
     testGen: (input: {useGreetings: Parameters<typeof deps["useGreetings"]["fakeGen"]>[0]}) => buildApp({useGreetings: input.useGreetings}),
 })
 ```
 
-Here's how this looks using a simple utililty function, which you can find in the code of this example project.
+Here's how this looks using an utililty function, which you can find in the code of this example project.
 
 ```typescript
 export const App = Object.assign(buildApp(deps), {
