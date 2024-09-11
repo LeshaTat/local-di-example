@@ -15,7 +15,7 @@ function App() {
 export const App = Object.assign(buildApp(deps), { 
   deps,
   testGen: reassign(buildApp, {
-    useGreetings: nest("useGreetings", deps.useGreetings.fakeGen)
+    useGreetings: nest("greetings", deps.useGreetings.fakeGen)
   })
 })
 
