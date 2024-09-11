@@ -8,7 +8,7 @@ Our intention is to provide the simplest possible code to start with.
 
 # Concept
 
-We encourage use of TDD and DI as a ways to organize both the coding process and the code itself. 
+We encourage use of TDD and DI as ways to organize both the coding process and the code itself. 
 However, we do not want to introduce any unnecessary complexity to the project.
 
 Our approach is to propose a simple starting point that is easily integrated in any project without any overhead.
