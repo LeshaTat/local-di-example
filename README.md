@@ -82,7 +82,7 @@ const useGreetings = Object.assign(() => "Hello World!" as string, {
 In this case, we can create a somewhat simplified test generator for the component.
 ```typescript
 export const App = Object.assign(buildApp(deps), {
-    testGen: (input: {useGreetings: Parameters<typeof deps["useGreetings"]["fakeGen"]>[0]}) => buildApp({useGreetings: input.useGreetings}),
+    testGen: (input: {greetings: Parameters<typeof deps["useGreetings"]["fakeGen"]>[0]}) => buildApp({useGreetings: deps.useGreetings.fakeGen(input.greetings)}),
 })
 ```
 
@@ -91,12 +91,20 @@ Here's how this looks using an utililty function, which you can find in the code
 ```typescript
 export const App = Object.assign(buildApp(deps), {
     testGen: reassign(buildApp, {
-        useGreetings: nest("useGreetings", deps.useGreetings.fakeGen)
+        useGreetings: nest("greetings", deps.useGreetings.fakeGen)
     }),
 })
 ```
 
 In a real project, you may want to further minimize the code, for example, by reducing mentions of dependency keys (e.g., "useGreetings"), or even adding a mass generation of such functions. However, each of this tooling will increase the complexity of a declaration and make it less explicit. So, we leave this decision up to you.
+
+After these adjustments you can use the simplified constructor for tests.
+
+```typescript
+const TestApp = App.testGen({
+  greetings: "Hello Test!"
+})
+```
 
 # Other Injecting Methods
 
