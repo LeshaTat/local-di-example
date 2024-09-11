@@ -54,7 +54,7 @@ export const App = buildApp(deps)
 
 ## Add Meta for Testing
 
-Here, we do not export the buildApp function directly. Instead, we recommend to adding metadata to the App function itself.
+Here, we do not export the buildApp function directly. Instead, we recommend adding metadata to the App function itself.
 We attach buildApp under the name testGen as metadata to make it clear that this function is intended for testing purposes.
 
 ```typescript
@@ -63,7 +63,7 @@ export const App = Object.assign(buildApp(deps), {
 })
 ```
 
-Now, in the test file, you can easily replace the dependency with a mock object.
+Now, in the test file, you can easily replace the dependency with a stub object.
 ```typescript
 const TestApp = App.testGen({
   useGreeting: () => "Hello Test!"
@@ -96,7 +96,7 @@ export const App = Object.assign(buildApp(deps), {
 })
 ```
 
-In a real project, you may want to further minimize the code, for example, by reducing mentions of dependency keys (e.g., "useGreeting") to a single place, or even adding a mass generation of such functions. However, each of this tooling will increase the complexity of a declaration and make it less explicit. So, we leave this decision up to you.
+In a real project, you may want to further minimize the code, for example, by reducing mentions of dependency keys (e.g., "useGreeting"), or even adding a mass generation of such functions. However, each of this tooling will increase the complexity of a declaration and make it less explicit. So, we leave this decision up to you.
 
 # Other Injecting Methods
 
