@@ -1,4 +1,4 @@
-import { DictWithout, fielded, reassign } from "../reassign"
+import { DictWithout, nest, reassign } from "../reassign"
 
 describe("reassign", () => {
   it("should reassign", () => {
@@ -8,9 +8,9 @@ describe("reassign", () => {
       c: Object.assign({c: "value"}, {testGen: (input: {cTest: string}) => ({c: "testc-"+input.cTest})}),
     }
     const res = reassign((d: DictWithout<typeof deps, "testGen">) => d, {
-      a: fielded("aTest", (aTest: string) => "testa-"+aTest),
+      a: nest("aTest", (aTest: string) => "testa-"+aTest),
       b: deps.b.testGen,
-      c: fielded("c", deps.c.testGen),
+      c: nest("c", deps.c.testGen),
     })
     expect(res({
       aTest: "aa",

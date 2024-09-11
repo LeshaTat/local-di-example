@@ -11,9 +11,8 @@ export const reassign = <D extends Record<string, any>, O, DG extends {
   }, {} as any))
 }
 
-export const fielded = <K extends string, I, O>(key: K, fn: (input: I) => O) => 
+export const nest = <K extends string, I, O>(key: K, fn: (input: I) => O) => 
 (input: Record<K, I>): O => fn(input[key])
-
 
 export type OmitF<T extends Record<string, any>, K extends string> = T extends (...args: infer I) => infer O
 ? (...args: I) => O & Omit<T, K>

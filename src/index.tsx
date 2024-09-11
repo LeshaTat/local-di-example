@@ -1,5 +1,4 @@
-import { fielded, reassign } from "builder"
-import { DictWithout } from "./util/reassign";
+import { DictWithout, nest, reassign } from "./util/reassign";
 
 const deps = {
   useGreeting: Object.assign(() => "Hello World!" as string, {
@@ -16,6 +15,7 @@ function App() {
 export const App = Object.assign(buildApp(deps), { 
   deps,
   testGen: reassign(buildApp, {
-    useGreeting: fielded("useGreeting", deps.useGreeting.testGen)
+    useGreeting: nest("useGreeting", deps.useGreeting.testGen)
   })
 })
+

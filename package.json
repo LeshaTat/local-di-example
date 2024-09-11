@@ -12,7 +12,7 @@
   "dependencies": {
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
-    "react": "^18.3.1",
+    "react": "^18.3.1"
   },
   "devDependencies": {
     "@swc/core": "^1.7.23",
