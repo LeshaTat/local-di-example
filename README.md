@@ -1,6 +1,6 @@
-=== WIP: the work is on __early__ stage ===
+**WIP: The work is at an early stage**
 
-== NOT A LIBRARY ==
+***NOT A LIBRARY***
 
 This code is intended to be a starting point for adding a DI structure to a project. 
 Fill free to copy the utility code and modify it later to suit your project's specific needs. 
@@ -98,12 +98,12 @@ export const App = Object.assign(buildApp(deps), {
 
 In a real project, you may want to further minimize the code, for example, by reducing mentions of dependency keys (e.g., "useGreeting") to a single place, or even adding a mass generation of such functions. However, each of this tooling will increase the complexity of a declaration and make it less explicit. So, we leave this decision up to you.
 
-# Other injecting methods
+# Other Injecting Methods
 
-We recommend using different methods fir injecting dependencies in different cases.
+We recommend using different methods for injecting dependencies in different cases.
 
 The method described above is good for top-level components as it is simple and explicit.
-For the deep components, we recommend using React Context.
+For deeper components, we recommend using React Context.
 This way, you can avoid writing a builder for each small component.
 
 The use of React Context for dependency injection is not in the scope of this example project.
