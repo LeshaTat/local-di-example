@@ -34,16 +34,16 @@ Again, we do not propose any library methods - just a simple way to organize the
 First, explicitly add dependencies in the file where you construct your object. 
 ```typescript
 const deps = {
-  useGreeting: () => "Hello World!"
+  useGreetings: () => "Hello World!"
 }
 ```
 
 Then, define a function that constructs the object using these dependencies.
 ```typescript
-const buildApp = ({useGreeting}: typeof deps) =>
+const buildApp = ({useGreetings}: typeof deps) =>
 function App() {
-  const greeting = useGreeting()
-  return <div>{ greeting }</div>
+  const greetings = useGreetings()
+  return <div>{ greetings }</div>
 }
 ```
 
@@ -66,7 +66,7 @@ export const App = Object.assign(buildApp(deps), {
 Now, in the test file, you can easily replace the dependency with a stub object.
 ```typescript
 const TestApp = App.testGen({
-  useGreeting: () => "Hello Test!"
+  useGreetings: () => "Hello Test!"
 })
 ```
 
@@ -74,15 +74,15 @@ const TestApp = App.testGen({
 
 It's a good idea to provide a fake generator as metadata for the object that is intended to be used as a dependency.
 ```typescript
-const useGreeting = Object.assign(() => "Hello World!" as string, {
-    fakeGen: (greeting: string) => () => greeting
+const useGreetings = Object.assign(() => "Hello World!" as string, {
+    fakeGen: (greetings: string) => () => greetings
 })
 ```
 
 In this case, we can create a simplified test generator for the component.
 ```typescript
 export const App = Object.assign(buildApp(deps), {
-    testGen: (input: {useGreeting: Parameters<typeof deps["useGreetings"]["fakeGen"]>[0]}) => buildApp({useGreetings: input.useGreeting}),
+    testGen: (input: {useGreetings: Parameters<typeof deps["useGreetings"]["fakeGen"]>[0]}) => buildApp({useGreetings: input.useGreetings}),
 })
 ```
 
@@ -91,12 +91,12 @@ Here's how this looks using a simple utililty function, which you can find in th
 ```typescript
 export const App = Object.assign(buildApp(deps), {
     testGen: reassign(buildApp, {
-        useGreeting: nest("useGreeting", deps.useGreeting.fakeGen)
+        useGreetings: nest("useGreetings", deps.useGreetings.fakeGen)
     }),
 })
 ```
 
-In a real project, you may want to further minimize the code, for example, by reducing mentions of dependency keys (e.g., "useGreeting"), or even adding a mass generation of such functions. However, each of this tooling will increase the complexity of a declaration and make it less explicit. So, we leave this decision up to you.
+In a real project, you may want to further minimize the code, for example, by reducing mentions of dependency keys (e.g., "useGreetings"), or even adding a mass generation of such functions. However, each of this tooling will increase the complexity of a declaration and make it less explicit. So, we leave this decision up to you.
 
 # Other Injecting Methods
 
