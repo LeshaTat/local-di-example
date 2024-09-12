@@ -1,18 +1,17 @@
 import { DictWithout, nest, reassign } from "./util/reassign";
 import { ListGen } from "./list/gen";
 
-type ListGenType<T> = typeof ListGen<T>
-const buildApp = ({useListOne, useListTwo, ListGen, ListItemComponent}: DictWithout<{
+const buildApp = ({useListOne, useListTwo, ListGenString, ListItemComponent}: DictWithout<{
   useListOne: () => string[],
   useListTwo: () => string[],
-  ListGen: ListGenType<string>,
+  ListGenString: typeof ListGen<string>,
   ListItemComponent: React.FC<{ item: string }>
 }, "testGen">) => {
-  const ListAppOne = ListGen({
+  const ListAppOne = ListGenString({
     useList: useListOne,
     ListItemComponent
   })
-  const ListAppTwo = ListGen({
+  const ListAppTwo = ListGenString({
     useList: useListTwo,
     ListItemComponent
   })
@@ -29,7 +28,7 @@ const buildApp = ({useListOne, useListTwo, ListGen, ListItemComponent}: DictWith
 const deps = {
   useListOne: () => ["first", "second", "last"],
   useListTwo: () => ["uno", "dos", "tres"],
-  ListGen: ListGen<string>,
+  ListGenString: ListGen<string>,
   ListItemComponent: ({ item }: { item: string }) => <p>{item}</p>
 }
 const useListFakeGen = (list?: string[]) => () => list || []
@@ -39,7 +38,7 @@ export const App = Object.assign(buildApp(deps), {
   testGen: reassign(buildApp, {
     useListOne: nest("list1", useListFakeGen),
     useListTwo: nest("list2", useListFakeGen),
-    ListGen: nest("listTestId", ListGen.testGen),
+    ListGenString: nest("listTestId", ListGen.testGen),
     ListItemComponent: () => deps.ListItemComponent
   })
 })
