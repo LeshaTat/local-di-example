@@ -2,48 +2,41 @@
 
 ***NOT A LIBRARY***
 
-This code is intended to be a starting point for adding a DI structure to a project. 
-Fill free to copy the utility code and modify it later to suit your project's specific needs. 
-Our intention is to provide the simplest possible code to start with.
-
 # Concept
+We encourage the use of TDD (Test-Driven Development) and IoC (Inversion of Control) as methods to organize both the coding process and the structure of the code.
 
-We encourage use of TDD and DI as ways to organize both the coding process and the code itself. 
-However, we do not want to introduce any unnecessary complexity to the project.
+We suggest using multiple DI patterns or other techniques within the same project.
+This is feasible, assuming each pattern or mechanism is sufficiently simple.
 
-Our approach is to propose a simple starting point that is easily integrated in any project without any overhead.
-
-In the real project, one can use several such schemes simultaneously.
-This is feasible, assuming that each of them is small and simple enough to be easily understood and maintained.
-This is a main point in our approach, which contrasts with universal, library-based DI solutions.
-You do not need to commit to a single library or a single approach.
+In this project, we present one such method for implementing DI.
 
 # Dependency Injection
 
-The core of the approach is straightforward. 
-Instead of defining the object itself, one defines a building procedure that generates an object from its dependencies. The main point is a freedom to work with dependencies, which includes:
-* You know exactly what the dependencies are, including their types and additional information.
-* You can easily replace a dependency with a mock object for testing purposes.
+The core of DI is to add an explicit boundary between modules and their dependencies.
+The main point is a freedom to work with dependencies, which includes:
+* Full visibility of what the dependencies are, including their types and any additional details.
+* The ability to easily replace a dependency with a mock object for testing purposes.
 
-Note: the first item is what differentiates DI from the service locator pattern, where there is no explicit declaration of dependencies in the code.
+We suggest the following straightforward method to implement the separation of concerns: declare a function that generates modules, such as React components or hooks, based on their dependencies.
 
-## Base Scheme
+## Basic scheme
 
-Again, we do not propose any library methods - just a simple way to organize the code.
+First, define a function that constructs the object.
 
-First, explicitly add dependencies in the file where you construct your object. 
 ```typescript
-const deps = {
-  useGreetings: () => "Hello World!"
-}
-```
-
-Then, define a function that constructs the object using these dependencies.
-```typescript
-const buildApp = ({useGreetings}: typeof deps) =>
+const buildApp = ({useGreetings}: {
+    useGreetings: () => string
+}) =>
 function App() {
   const greetings = useGreetings()
   return <div>{ greetings }</div>
+}
+```
+
+Then, explicitly add dependencies. 
+```typescript
+const deps = {
+  useGreetings: () => "Hello World!"
 }
 ```
 
@@ -54,8 +47,7 @@ export const App = buildApp(deps)
 
 ## Add Meta for Testing
 
-Here, we do not export the buildApp function directly. Instead, we recommend adding metadata to the App function itself.
-We attach buildApp under the name testGen as metadata to make it clear that this function is intended for testing purposes.
+We can attach buildApp function to the App component under the name testGen as metadata to make it clear that this function is intended for testing purposes.
 
 ```typescript
 export const App = Object.assign(buildApp(deps), {
@@ -63,10 +55,10 @@ export const App = Object.assign(buildApp(deps), {
 })
 ```
 
-Now, in the test file, you can easily replace the dependency with a stub object.
+Now, in the test file, one can easily replace the dependency with a stub object.
 ```typescript
 const TestApp = App.testGen({
-  useGreetings: () => "Hello Test!"
+    useGreetings: () => "Hello Test!"
 })
 ```
 
@@ -96,9 +88,9 @@ export const App = Object.assign(buildApp(deps), {
 })
 ```
 
-In a real project, you may want to further minimize the code, for example, by reducing mentions of dependency keys (e.g., "useGreetings"), or even adding a mass generation of such functions. However, each of this tooling will increase the complexity of a declaration and make it less explicit. So, we leave this decision up to you.
+In a real project, one may want to further minimize the code, for example, by reducing mentions of dependency keys (e.g., "useGreetings"), or even adding a mass generation of such functions. However, each of this tooling will increase the complexity of a declaration and make it less explicit.
 
-After these adjustments you can use the simplified constructor for tests.
+Now we can enjoy the simplified constructor for tests.
 
 ```typescript
 const TestApp = App.testGen({
@@ -106,12 +98,158 @@ const TestApp = App.testGen({
 })
 ```
 
-# Other Injecting Methods
-
-We recommend using different methods for injecting dependencies in different cases.
+## Other Injecting Methods
 
 The method described above is good for top-level components as it is simple and explicit.
-For deeper components, we recommend using React Context.
-This way, you can avoid writing a builder for each small component.
+For deeper components, we suggest using other methods, such as using React Context.
 
-The use of React Context for dependency injection is not in the scope of this example project.
+# Code Structure
+
+## Composing Dependencies
+
+Let's look at a more complex example. Suppose we need to load the user's name to display the greetings.
+
+```typescript
+const buildUseNameQuery = ({requestName}: { 
+    requestName: () => Promise<string> 
+}) =>
+function useNameQuery() { return useQuery("name", requestName) }
+
+export const useNameQuery = Object.assign(buildUseNameQuery({
+  requestName: async () => "John Doe"
+}), {
+  fakeGen: buildUseNameQuery
+})
+```
+
+Here is how one can declare useGreetings with the useNameQuery dependency. 
+
+```typescript
+const buildUseGreetings = ({useNameQuery}: {
+  useNameQuery: () => UseQueryResult<string>
+}) =>
+function useGreetings() {
+  const {data} = useNameQuery()
+  return `Hello ${data}!`
+}
+
+const deps = {
+  useGreetings: Object.assign(buildUseGreetings({useNameQuery}), {
+    testGen: reassign(buildUseGreetings, {
+      useNameQuery: useNameQuery.fakeGen
+    }),
+    fakeGen: (greetings: string) => () => greetings
+  })
+}
+export const App = Object.assign(buildApp(deps), { 
+  deps,
+  testGen: reassign(buildApp, {
+    useGreetings: nest("greetings", deps.useGreetings.fakeGen)
+  })
+})
+```
+
+Now, it is easy to add tests for the useGreetings hook by addressing it through App.deps.useGreetings.
+
+```typescript
+it('should greet with fetched name', async () => {
+    const useGreetingsTest = App.deps.useGreetings.testGen({
+        requestName: async () => "Test Name"
+    })
+    const {result} = renderHook(useGreetingsTest, {wrapper})
+    await waitFor(() => expect(result.current).toBe("Hello, Test Name!"))
+})
+```
+
+## Making Reusable Objects
+
+The principles of IoC help decouple modules within the code, allowing them to evolve independently over time. This is useful when development is divided into stages, as one module can be completed without requiring all its dependencies to be finished.
+
+This characteristic can be seen as a form of reusability, where the same code is reused at different stages of development.
+
+We should distinguish this type of reusability from reusability in the sense of applicability across different contexts.
+Let us call the former “reusability over time” and the latter “reusability over context.”
+
+To clarify, “reusability over time” involves a one-to-one relationship between a module’s interface and its implementation at any given point in time, while “reusability over context” allows for multiple implementations of the same interface.
+
+We recommend explicitly separating these two types of reusability in the code.
+In particular, we suggest using builder functions for reusability over time and avoiding the reuse of builder functions for reusability over context.
+
+For "reusability over context", we suggest to use generator functions. 
+They are syntactically similar to builder functions but differ in how they are used.
+
+Let's consider an example.
+
+Suppose we want to create a list component that can be used with different data sources.
+
+```typescript
+export type ListGenInterface = <T,>({ useList, ListItemComponent }: {
+  useList: () => T[] | undefined,
+  ListItemComponent: React.FC<{ item: T }>
+}) => React.FC<{}>
+
+const buildListGen = ({ ListComponent }: {
+  ListComponent: React.FC<{ children: JSX.Element[] }>,
+}): ListGenInterface => ({ useList, ListItemComponent }) =>
+function List() {
+  const list = useList();
+  if (!list) return null;
+  return <ListComponent>
+    {list.map((item, ind) => <ListItemComponent key={ind} item={item} />)!}
+  </ListComponent>
+}
+
+export const ListGen = Object.assign(buildListGen({
+  ListComponent: ({ children }) => <ul>{children}</ul>,
+}), {
+  testGen: (testId?: string) => buildListGen({
+    ListComponent: ({ children }) => <div data-testid={testId}>{children}</div>
+  })
+})
+```
+
+In this case, the list generator itself becomes a dependency for the App component.
+
+```typescript
+const buildApp = ({useListOne, useListTwo, ListGen, ListItemComponent}: {
+  useListOne: () => string[],
+  useListTwo: () => string[],
+  ListGen: ListGenInterface,
+  ListItemComponent: React.FC<{ item: string }>
+}) => {
+  const ListAppOne = ListGen({
+    useList: useListOne,
+    ListItemComponent
+  })
+  const ListAppTwo = ListGen({
+    useList: useListTwo,
+    ListItemComponent
+  })
+  return function App() {
+    return <>
+      <h1>List One</h1>
+      <ListAppOne />
+      <h1>List Two</h1>
+      <ListAppTwo />
+    </>
+  }
+}
+const deps = {
+  useListOne: () => ["first", "second", "last"],
+  useListTwo: () => ["uno", "dos", "tres"],
+  ListGen,
+  ListItemComponent: ({ item }: { item: string }) => <p>{item}</p>
+}
+const useListFakeGen = (list?: string[]) => () => list || []
+
+export const App = Object.assign(buildApp(deps), { 
+  deps,
+  testGen: reassign(buildApp, {
+    useListOne: nest("list1", useListFakeGen),
+    useListTwo: nest("list2", useListFakeGen),
+    ListGen: nest("listTestId", ListGen.testGen),
+    ListItemComponent: () => deps.ListItemComponent
+  })
+})
+```
+

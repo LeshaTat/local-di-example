@@ -1,9 +1,11 @@
-const buildListGen = ({ ListComponent }: {
-  ListComponent: React.FC<{ children: JSX.Element[] }>,
-}) => <T,>({ useList, ListItemComponent }: {
+export type ListGenInterface = <T,>({ useList, ListItemComponent }: {
   useList: () => T[] | undefined,
   ListItemComponent: React.FC<{ item: T }>
-}) =>
+}) => React.FC<{}>
+
+const buildListGen = ({ ListComponent }: {
+  ListComponent: React.FC<{ children: JSX.Element[] }>,
+}): ListGenInterface => ({ useList, ListItemComponent }) =>
 function List() {
   const list = useList();
   if (!list) return null;
