@@ -1,10 +1,27 @@
+type PickNullable<T> = {
+  [P in keyof T as undefined extends T[P] ? P : never]: T[P]
+}
+
+type PickNotNullable<T> = {
+  [P in keyof T as undefined extends T[P] ? never : P]: T[P]
+}
+
+type OptionalNullable<T> = {
+  [K in keyof PickNullable<T>]?: Exclude<T[K], undefined>
+} & {
+  [K in keyof PickNotNullable<T>]: T[K]
+}
+
+type UnionToIntersection<U> = 
+  (U extends any ? (x: U)=>void : never) extends ((x: infer I)=>void) ? I : never
+
 export const reassign = <D extends Record<string, any>, O, DG extends {
   [K in keyof D]: (input: any) => D[K]
 }>(
   fn: (input: D) => O,
   gens: DG
 ) => 
-(input: Parameters<DG[keyof D]>[0]): O => {
+(input: OptionalNullable<UnionToIntersection<Parameters<DG[keyof D]>[0]>>): O => {
   return fn(Object.keys(gens).reduce((acc, key) => {
     acc[key] = gens[key](input)
     return acc

@@ -1,4 +1,4 @@
-import { DictWithout, nest, reassign } from "../reassign"
+import { DictWithout, nest, reassign } from "./reassign"
 
 describe("reassign", () => {
   it("should reassign", () => {

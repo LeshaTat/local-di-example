@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { App } from ".";
+import { App } from "./step1";
 
 describe('Index', () => {
   it('should render hello world', () => {

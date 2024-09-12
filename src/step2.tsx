@@ -1,7 +1,20 @@
+import { UseQueryResult } from "react-query";
+import { useNameQuery } from "./service/useNameQuery";
 import { DictWithout, nest, reassign } from "./util/reassign";
 
+const buildUseGreetings = ({useNameQuery}: {
+  useNameQuery: () => UseQueryResult<string>
+}) => 
+function useGreetings() {
+  const { data } = useNameQuery();
+  return `Hello, ${data}!`
+}
+
 const deps = {
-  useGreetings: Object.assign(() => "Hello World!" as string, {
+  useGreetings: Object.assign(buildUseGreetings({useNameQuery}), {
+    testGen: reassign(buildUseGreetings, {
+      useNameQuery: useNameQuery.fakeGen
+    }),
     fakeGen: (greetings: string) => () => greetings
   })
 }
