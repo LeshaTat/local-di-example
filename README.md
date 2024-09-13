@@ -163,20 +163,11 @@ it('should greet with fetched name', async () => {
 
 ## Making Reusable Objects
 
-The principles of IoC help decouple modules within the code, allowing them to evolve independently over time. This is useful when development is divided into stages, as one module can be completed without requiring all its dependencies to be finished.
+Although builder functions are functions and could be reused with different dependencies, we do not encourage using them in this way.
 
-This characteristic can be seen as a form of reusability, where the same code is reused at different stages of development.
+Instead, to create a steam prototype that will be branched into different objects, we suggest defining an explicit function - a generator - that will create these branched objects.
 
-We should distinguish this type of reusability from reusability in the sense of applicability across different contexts.
-Let us call the former “reusability over time” and the latter “reusability over context.”
-
-To clarify, “reusability over time” involves a one-to-one relationship between a module’s interface and its implementation at any given point in time, while “reusability over context” allows for multiple implementations of the same interface.
-
-We recommend explicitly separating these two types of reusability in the code.
-In particular, we suggest using builder functions for reusability over time and avoiding the reuse of builder functions for reusability over context.
-
-For "reusability over context", we suggest to use generator functions. 
-They are syntactically similar to builder functions but differ in how they are used.
+A generator can itself be treated as a module of the system and be subject to our DI approach.
 
 Let's consider an example.
 
