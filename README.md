@@ -3,21 +3,19 @@
 ***NOT A LIBRARY***
 
 # Concept
-We encourage the use of TDD (Test-Driven Development) and IoC (Inversion of Control) as methods to organize both the coding process and the structure of the code.
 
-We suggest using multiple DI patterns or other techniques within the same project.
-This is feasible, assuming each pattern or mechanism is sufficiently simple.
+This is an example project that demonstrates a method for implementing Dependency Injection (DI) in a React project
+to support test-driven development and apply the principle of Inversion of Control (IoC).
 
-In this project, we present one such method for implementing DI.
+Our approach has several significant differences from the standard way of implementing DI:
+1. **Single Dependency Injection per Module:** We do not allow injecting different dependencies for the same module.
+There are still other ways to make reusable objects, which we will discuss later.
+2. **Local Definition of Dependencies:** Injected dependencies are explicitly declared near the module that uses them, typically within the same file.
+3. **Module-Specific Test Generators:** Instead of using a global substitution mechanism, we suggest providing a test generator for each module that depends on injected dependencies.
+The idea is that the test generator will use test generators of dependencies to create a test object.
 
-# Dependency Injection
 
-The core of DI is to add an explicit boundary between modules and their dependencies.
-The main point is a freedom to work with dependencies, which includes:
-* Full visibility of what the dependencies are, including their types and any additional details.
-* The ability to easily replace a dependency with a mock object for testing purposes.
-
-We suggest the following straightforward method to implement the separation of concerns: declare a function that generates modules, such as React components or hooks, based on their dependencies.
+# Dependency Injection Implementation
 
 ## Basic scheme
 
@@ -71,10 +69,14 @@ const useGreetings = Object.assign(() => "Hello World!" as string, {
 })
 ```
 
-In this case, we can create a somewhat simplified test generator for the component.
+Now, we can use fakeGen to generate a fake object for testing.
 ```typescript
 export const App = Object.assign(buildApp(deps), {
-    testGen: (input: {greetings: Parameters<typeof deps["useGreetings"]["fakeGen"]>[0]}) => buildApp({useGreetings: deps.useGreetings.fakeGen(input.greetings)}),
+    testGen: (input: {
+        greetings: Parameters<typeof deps["useGreetings"]["fakeGen"]>[0]
+    }) => buildApp({
+        useGreetings: deps.useGreetings.fakeGen(input.greetings)
+    }),
 })
 ```
 
@@ -163,11 +165,7 @@ it('should greet with fetched name', async () => {
 
 ## Making Reusable Objects
 
-Although builder functions are functions and could be reused with different dependencies, we do not encourage using them in this way.
-
-Instead, to create a steam prototype that will be branched into different objects, we suggest defining an explicit function - a generator - that will create these branched objects.
-
-A generator can itself be treated as a module of the system and be subject to our DI approach.
+While we prohibit injecting different dependencies into the same module, there are still ways to create reusable objects.
 
 Let's consider an example.
 
