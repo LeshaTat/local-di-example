@@ -11,7 +11,7 @@ describe('listGen', () => {
     expect(screen.queryByTestId('list-test')).toBeNull()
   })
   it("should render all list items", () => {
-    const ListTest = ListGen({
+    const ListTest = ListGen.testGen('list-test')({
       ListItemComponent: ({ item }) => <li>{item}</li>,
       useList: () => ['a-test', 'b-test', 'c-test']
     })

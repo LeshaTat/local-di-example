@@ -14,11 +14,13 @@ function List() {
   </ListComponent>
 }
 
+const testGen = (testId?: string) => buildListGen({
+  ListComponent: ({ children }) => <div data-testid={testId}>{children}</div>
+})
+
 export const ListGen = Object.assign(buildListGen({
   ListComponent: ({ children }) => <ul>{children}</ul>,
 }), {
-  testGen: (testId?: string) => buildListGen({
-    ListComponent: ({ children }) => <div data-testid={testId}>{children}</div>
-  })
+  testGen, fakeGen: testGen
 })
 

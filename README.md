@@ -8,7 +8,9 @@ This is an example project that demonstrates a method for implementing Dependenc
 to support test-driven development and apply the principle of Inversion of Control (IoC).
 
 Our approach has several significant differences from the standard way of implementing DI:
-1. **Single Dependency Injection per Module:** We do not allow injecting different dependencies for the same module.
+1. **Fixed Dependencies per Module:** 
+In our approach, each module is instantiated with a single, fixed set of dependencies. 
+We do not support injecting different dependencies into the same module in different contexts.
 There are still other ways to make reusable objects, which we will discuss later.
 2. **Local Definition of Dependencies:** Injected dependencies are explicitly declared near the module that uses them, typically within the same file.
 3. **Module-Specific Test Generators:** Instead of using a global substitution mechanism, we suggest providing a test generator for each module that depends on injected dependencies.
@@ -165,7 +167,7 @@ it('should greet with fetched name', async () => {
 
 ## Making Reusable Objects
 
-While we prohibit injecting different dependencies into the same module, there are still ways to create reusable objects.
+While our approach assigns a fixed set of dependencies to each module, there are still ways to create reusable objects.
 
 Let's consider an example.
 
@@ -188,12 +190,14 @@ function List() {
   </ListComponent>
 }
 
+const testGen = (testId?: string) => buildListGen({
+  ListComponent: ({ children }) => <div data-testid={testId}>{children}</div>
+})
+
 export const ListGen = Object.assign(buildListGen({
   ListComponent: ({ children }) => <ul>{children}</ul>,
 }), {
-  testGen: (testId?: string) => buildListGen({
-    ListComponent: ({ children }) => <div data-testid={testId}>{children}</div>
-  })
+  testGen, fakeGen: testGen
 })
 ```
 
@@ -236,7 +240,7 @@ export const App = Object.assign(buildApp(deps), {
   testGen: reassign(buildApp, {
     useListOne: nest("list1", useListFakeGen),
     useListTwo: nest("list2", useListFakeGen),
-    ListGen: nest("listTestId", ListGen.testGen),
+    ListGen: nest("listTestId", ListGen.fakeGen),
     ListItemComponent: () => deps.ListItemComponent
   })
 })

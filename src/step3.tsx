@@ -38,7 +38,7 @@ export const App = Object.assign(buildApp(deps), {
   testGen: reassign(buildApp, {
     useListOne: nest("list1", useListFakeGen),
     useListTwo: nest("list2", useListFakeGen),
-    ListGen: nest("listTestId", ListGen.testGen),
+    ListGen: nest("listTestId", ListGen.fakeGen),
     ListItemComponent: () => deps.ListItemComponent
   })
 })
