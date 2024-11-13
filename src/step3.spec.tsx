@@ -14,7 +14,7 @@ describe("App third version", () => {
   })
   it("should render two similar lists", () => {
     const AppTest = App.testGen({
-      listTestId: ["test-list"]
+      listTestId: "test-list"
     })
     render(<AppTest />)
     expect(screen.queryAllByTestId("test-list")).toHaveLength(2)

@@ -241,7 +241,7 @@ export const App = Object.assign(buildApp(deps), {
     useListOne: nest("list1", useListFakeGen),
     useListTwo: nest("list2", useListFakeGen),
     ListGen: nest("listTestId", ListGen.fakeGen),
-    ListItemComponent: () => deps.ListItemComponent
+    ListItemComponent: fixed(deps.ListItemComponent)
   })
 })
 ```

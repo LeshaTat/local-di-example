@@ -1,4 +1,4 @@
-import { nest, reassign } from "./util/reassign";
+import { fixed, nest, reassign } from "./util/reassign";
 import { ListGen, ListGenInterface } from "./list/gen";
 
 const buildApp = ({useListOne, useListTwo, ListGen, ListItemComponent}: {
@@ -39,7 +39,7 @@ export const App = Object.assign(buildApp(deps), {
     useListOne: nest("list1", useListFakeGen),
     useListTwo: nest("list2", useListFakeGen),
     ListGen: nest("listTestId", ListGen.fakeGen),
-    ListItemComponent: () => deps.ListItemComponent
+    ListItemComponent: fixed(deps.ListItemComponent)
   })
 })
 
