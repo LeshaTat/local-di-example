@@ -21,7 +21,9 @@ export const reassign = <D extends Record<string, any>, O, DG extends {
   fn: (input: D) => O,
   gens: DG
 ) => 
-(input: OptionalNullable<UnionToIntersection<Parameters<DG[keyof D]>[0]>>): O => {
+(input: OptionalNullable<UnionToIntersection<
+  Exclude<Parameters<DG[keyof D]>[0], undefined | null | never>
+>>): O => {
   return fn(Object.keys(gens).reduce((acc, key) => {
     acc[key] = gens[key](input)
     return acc
